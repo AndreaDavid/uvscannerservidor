@@ -1,0 +1,21 @@
+# Eclipse
+.classpath
+.project
+.settings/
+/src/main/resources/static
+!/src/main/resources/static/resources/error.html
+!/src/main/resources/static/resources/images/error/*
+# Intellij
+.idea/
+*.iml
+*.iws
+ 
+# Mac
+.DS_Store
+ 
+# Maven
+log/
+target/
+
+# Carpetas de compilado de sencha y netbeans
+src/test
