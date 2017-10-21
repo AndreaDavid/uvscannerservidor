@@ -62,7 +62,7 @@ public class UVRadiationRaspberryController {
                 insertar.setFechaMovil(new Date());
                 Track insertado = uvRadiationTrackRepository.save(insertar);//guardar en la base de datos el dato.
                 
-                insertados.add(mapearTrackDTO(insertado, false));//el que se insertó lo mapea a DTO y lo inserta 
+                insertados.add(mapearTrackDTO(insertado));//el que se insertó lo mapea a DTO y lo inserta 
             }
            // this.template.convertAndSend("/topic/actrecord", retornos);
             return ExtJSReturnUtil.mapOK(insertados);
@@ -76,18 +76,28 @@ public class UVRadiationRaspberryController {
             return ExtJSReturnUtil.mapError("Error en insertarTracks");
         }
         
-        
-        
-        /*
-        for (TrackDTO track : tracks) {
-            System.out.println(track.getLectura());
-            System.out.println(track.getNombreUsuario());
-        }
-        System.out.println(tracks.size());
-        return ExtJSReturnUtil.mapOK(tracks);*/
     }
+    
+    @JsonRequestMappingUtil(value = "/obtenerAllTracks", method = RequestMethod.GET)//declara la direccion del metodo y cuales es el tipo de peticion que se debe usar
+    public @ResponseBody
+    Map<String, Object> obtenerAllTracks() {//se comunica extjs (vista)
+        //
+        try {
+            Iterable<Track> resultado = uvRadiationTrackRepository.findAll();
+            List<TrackDTO> retorno=new ArrayList<>();
+            for (Track track : resultado) {
+                retorno.add(mapearTrackDTO(track));
+            }
+            return ExtJSReturnUtil.mapOK(retorno);
+        }catch (Exception e) {
+            log.error("insertarTracks", e);
+            return ExtJSReturnUtil.mapError("Error en insertarTracks");
+        }
+        
+    }
+    
 
-    private TrackDTO mapearTrackDTO(Track t, boolean cron) {
+    private TrackDTO mapearTrackDTO(Track t) {
         TrackDTO newTrack = new TrackDTO();
       
         newTrack.setId(t.getId());
