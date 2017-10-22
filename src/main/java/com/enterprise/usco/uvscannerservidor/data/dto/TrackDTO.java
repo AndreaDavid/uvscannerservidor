@@ -88,7 +88,7 @@ public class TrackDTO {
         this.estado = estado;
     }
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSZ", timezone = JsonFormat.DEFAULT_TIMEZONE)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSZ",timezone = "GMT-5",locale = "GMT-5")
     public Date getFechaServidor() {
         return fechaServidor;
     }
@@ -103,7 +103,7 @@ public class TrackDTO {
     /**
      * @return the fechaMovil
      */
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSZ", timezone = JsonFormat.DEFAULT_TIMEZONE)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSZ")
     public Date getFechaMovil() {
         return fechaMovil;
     }
