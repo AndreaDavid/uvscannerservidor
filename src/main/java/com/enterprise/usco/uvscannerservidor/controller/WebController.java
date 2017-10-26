@@ -25,55 +25,24 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-/**
- *
- */
 @Controller
 @Configuration
 @EnableAsync
 @EnableScheduling
-@JsonRequestMappingUtil("/raspberrycontroller")
-public class UVRadiationRaspberryController {
+@JsonRequestMappingUtil("/webcontroller")
+public class WebController {
 
-    private static final Log log = LogFactory.getLog(UVRadiationRaspberryController.class);
+    private static final Log log = LogFactory.getLog(WebController.class);
     /*
     @Autowired
     private SimpMessagingTemplate template;*/
 
     @Autowired//anotacion que permino no inicializar el repository
     private UVRadiationTrackRepository uvRadiationTrackRepository;
-
-    @JsonRequestMappingUtil(value = "/insertarTracks", method = RequestMethod.POST)//declara la direccion del metodo y cuales es el tipo de peticion que se debe usar
-    public @ResponseBody
-    Map<String, Object> insertarTracks(@RequestBody List<TrackDTO> tracks) {//se comunica extjs (vista)
-        //
-        try {
-            List<TrackDTO> insertados = new ArrayList<>();//se declara lista insertados
-
-            for (TrackDTO track : tracks) {//for extendido recorre lista tracks 
-                Track insertar = this.mapearTrack(track);//mapear trackdto a track
-                insertar.setFechaCapturaGps(new Date());
-                insertar.setFechaMovil(new Date());
-                Track insertado = uvRadiationTrackRepository.save(insertar);//guardar en la base de datos el dato.
-
-                insertados.add(mapearTrackDTO(insertado));//el que se insertó lo mapea a DTO y lo inserta 
-            }
-            // this.template.convertAndSend("/topic/actrecord", retornos);
-            return ExtJSReturnUtil.mapOK(insertados);
-        } catch (NumberFormatException l) {
-            log.error("Error de parseo", l);
-            return ExtJSReturnUtil.mapError("Error en insertarTracks");
-        } catch (Exception e) {
-            log.error("insertarTracks", e);
-            return ExtJSReturnUtil.mapError("Error en insertarTracks");
-        }
-
-    }
 
     @JsonRequestMappingUtil(value = "/obtenerAllTracks", method = RequestMethod.GET)//declara la direccion del metodo y cuales es el tipo de peticion que se debe usar
     public @ResponseBody
