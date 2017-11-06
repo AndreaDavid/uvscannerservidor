@@ -16,13 +16,25 @@ public class Usuario  implements java.io.Serializable {
 
 
      private Integer id;
+     private String user; 
      private String nombreUsuario;
+     private String password;
+     private String correo;
      
      
     public Usuario() {
     }
 
-   
+
+    public Usuario(String nombreUsuario, String password, String correo, String user) {
+        this.nombreUsuario = nombreUsuario;
+        this.password = password;
+        this.correo = correo;
+        this.user = user; 
+      
+    }
+    
+    
     @Id 
     @GeneratedValue(strategy=IDENTITY)
     @Column(name="id", unique=true, nullable=false)
@@ -42,7 +54,33 @@ public class Usuario  implements java.io.Serializable {
     public void setNombreUsuario(String nombreUsuario) {
         this.nombreUsuario = nombreUsuario;
     }
-
+    
+    @Column(name = "password",length=100)
+    public String getPassword(){
+        return this.password;
+    }
+    public void setPassword(String contraseña){
+        this.password = contraseña; 
+    }
+    
+    @Column(name="correo", length=150)
+    public String getCorreo() {
+        return this.correo;
+    }
+    
+    public void setCorreo(String correo) {
+        this.correo = correo;
+    }
+    
+    @Column(name="user", length=20)
+    public String getUser() {
+        return this.user;
+    }
+    
+    public void setUser(String user) {
+        this.user = user;
+    }
+    
 }
 
 
