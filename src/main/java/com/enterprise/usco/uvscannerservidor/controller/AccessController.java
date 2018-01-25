@@ -50,24 +50,24 @@ public class AccessController {
     @JsonRequestMappingUtil(value = "/register", method = RequestMethod.POST)//declara la direccion del metodo y cuales es el tipo de peticion que se debe usar
     
     public @ResponseBody
-    Map<String, Object> register(@RequestParam(value = "user", required = true) String user,//parametros que deben estar presente, no puede ser nulos
+    Map<String, Object> register(//parametros que deben estar presente, no puede ser nulos
             @RequestParam(value = "password", required = true) String password,
             @RequestParam(value = "correo", required = true) String correo,
             @RequestParam(value = "nombre", required = true) String nombre) {//se comunica extjs (vista)
         
-        List<Usuario> usuarios = usuarioRepository.findUserByUserName(user);//trae todos los usuarios que tengan el mismo nombre ingersado
+        List<Usuario> usuarios = usuarioRepository.findUserByUserName(correo);//trae todos los usuarios que tengan el mismo nombre ingersado
         if (usuarios.size() > 0) {
             
             return ExtJSReturnUtil.mapError("usuarioExistente");//
         }
-        Usuario usuario = new Usuario(nombre, password, correo, user);
+        Usuario usuario = new Usuario(nombre, password, correo, correo);
 
 //usuario.setCorreo(correo);
         //usuario.setPassword(password);
         //usuario.setNombreUsuario(nombre);
-        log.info(user + password);
+        log.info(correo + password);
         usuarioRepository.save(usuario);
-        return ExtJSReturnUtil.mapOk(user);
+        return ExtJSReturnUtil.mapOk(correo);
         
     }
 
