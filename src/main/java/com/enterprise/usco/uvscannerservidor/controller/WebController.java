@@ -67,6 +67,9 @@ public class WebController {
     Map<String, Object> obtenerAllTracksForRange(@RequestParam(value = "range", required = true) Integer rango) {//se comunica extjs (vista)
         //
         try {
+            if(rango==null){
+                rango=50;
+            }
             Date fechaSuperior = new Date();
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(fechaSuperior);

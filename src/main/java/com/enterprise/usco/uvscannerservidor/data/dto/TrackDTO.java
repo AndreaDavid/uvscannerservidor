@@ -88,7 +88,7 @@ public class TrackDTO {
         this.estado = estado;
     }
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy/MM/dd/HH/mm/ss/SSSZ",timezone = "GMT-5",locale = "GMT-5")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy/MM/dd/HH/mm/ss/SSSZ",timezone = JsonFormat.DEFAULT_TIMEZONE)//,timezone = "GMT-5",locale = "GMT-5")
     public Date getFechaServidor() {
         return fechaServidor;
     }

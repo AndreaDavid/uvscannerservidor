@@ -12,6 +12,7 @@ import com.enterprise.usco.uvscannerservidor.data.util.ExtJSReturnUtil;
 import com.enterprise.usco.uvscannerservidor.data.util.JsonRequestMappingUtil;
 import com.enterprise.usco.uvscannerservidor.repository.UsuarioRepository;
 import com.enterprise.usco.uvscannerservidor.util.AuthUtil;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
@@ -52,7 +53,7 @@ public class AccessController {
             securityService.login(correos.stream().findFirst().orElse(null), Boolean.TRUE);
             return ExtJSReturnUtil.mapOK(correos);
         } else {
-            return ExtJSReturnUtil.mapError("usuarioNoRegistrado");
+            return ExtJSReturnUtil.mapOk("usuarioNoRegistrado");
         }
     }
     @JsonRequestMappingUtil(value = "/logout", method = RequestMethod.GET)//declara la direccion del metodo y cuales es el tipo de peticion que se debe usar
@@ -103,11 +104,11 @@ public class AccessController {
                 return ExtJSReturnUtil.mapOK(user);
 
             } else {
-                return ExtJSReturnUtil.mapError("No se ha iniciado sesión");
+                return ExtJSReturnUtil.mapError("noSesion");
             }
 
         } else {
-            return ExtJSReturnUtil.mapError("Sesion no encontrada");
+            return ExtJSReturnUtil.mapError("noSesion");
         }
     }
 }
