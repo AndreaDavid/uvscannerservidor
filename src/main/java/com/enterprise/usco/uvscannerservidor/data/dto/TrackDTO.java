@@ -26,6 +26,7 @@ public class TrackDTO {
     private Double latitudPosicion;
     private Double longitudPosicion;
     private String lectura;
+    private Float uvi;
     
     
     
@@ -194,4 +195,15 @@ public class TrackDTO {
     public String getLectura() {
         return this.lectura;
     }
+
+    public Float getUvi() {
+        return uvi;
+    }
+
+    public void setUvi(Float uvi) {
+        this.uvi = uvi;
+    }
+    
+    
+    
 }

@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Controller;
@@ -41,16 +42,16 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class UVRadiationRaspberryController {
 
     private static final Log log = LogFactory.getLog(UVRadiationRaspberryController.class);
-    /*
+
     @Autowired
-    private SimpMessagingTemplate template;*/
+    private SimpMessagingTemplate template;
 
     @Autowired//anotacion que permino no inicializar el repository
     private UVRadiationTrackRepository uvRadiationTrackRepository;
 
-    @JsonRequestMappingUtil(value = "/insertarTracks", method = RequestMethod.POST)//declara la direccion del metodo y cuales es el tipo de peticion que se debe usar
+    @JsonRequestMappingUtil(value = "/insertarTracksLectura", method = RequestMethod.POST)//declara la direccion del metodo y cuales es el tipo de peticion que se debe usar
     public @ResponseBody
-    Map<String, Object> insertarTracks(@RequestBody List<TrackDTO> tracks) {//se comunica extjs (vista)
+    Map<String, Object> insertarTracksLectura(@RequestBody List<TrackDTO> tracks) {//se comunica extjs (vista)
         //
         try {
             List<TrackDTO> insertados = new ArrayList<>();//se declara lista insertados
@@ -63,7 +64,50 @@ public class UVRadiationRaspberryController {
 
                 insertados.add(mapearTrackDTO(insertado));//el que se insertó lo mapea a DTO y lo inserta 
             }
-            // this.template.convertAndSend("/topic/actrecord", retornos);
+            if (!insertados.isEmpty()) {
+                this.template.convertAndSend("/topic/updateuvi", insertados);
+            }
+            return ExtJSReturnUtil.mapOK(insertados);
+        } catch (NumberFormatException l) {
+            log.error("Error de parseo", l);
+            return ExtJSReturnUtil.mapError("Error en insertarTracks");
+        } catch (Exception e) {
+            log.error("insertarTracks", e);
+            return ExtJSReturnUtil.mapError("Error en insertarTracks");
+        }
+
+    }
+//track uvi
+    
+    @JsonRequestMappingUtil(value = "/insertarTracksUvi", method = RequestMethod.POST)//declara la direccion del metodo y cuales es el tipo de peticion que se debe usar
+    public @ResponseBody
+    Map<String, Object> insertarTracksUvi(@RequestBody List<TrackDTO> tracks) {//se comunica extjs (vista)
+        //
+        try {
+    
+            List<TrackDTO> insertados = new ArrayList<>();//se declara lista insertados
+            boolean setVista = true;
+
+            for (TrackDTO track : tracks) {//for extendido recorre lista tracks 
+                Track insertar = this.mapearTrack(track);//mapear trackdto a track
+                insertar.setFechaCapturaGps(new Date());//se le coloca fecha captura
+                insertar.setFechaMovil(new Date());
+                
+                Track anterior = uvRadiationTrackRepository.findLastTrackDataUvi();
+                
+                if(anterior!=null && anterior.getUvi()==insertar.getUvi()){
+                    
+                    setVista = false;
+                
+                }
+                
+                Track insertado = uvRadiationTrackRepository.save(insertar);//guardar en la base de datos el dato.
+                
+                insertados.add(mapearTrackDTO(insertado));//el que se insertó lo mapea a DTO y lo inserta 
+            }
+            if (!insertados.isEmpty() && setVista) {
+                this.template.convertAndSend("/topic/updateuvi", insertados);
+            }
             return ExtJSReturnUtil.mapOK(insertados);
         } catch (NumberFormatException l) {
             log.error("Error de parseo", l);
@@ -75,6 +119,9 @@ public class UVRadiationRaspberryController {
 
     }
 
+    
+    
+    
     @JsonRequestMappingUtil(value = "/obtenerAllTracks", method = RequestMethod.GET)//declara la direccion del metodo y cuales es el tipo de peticion que se debe usar
     public @ResponseBody
     Map<String, Object> obtenerAllTracks() {//se comunica extjs (vista)
@@ -140,6 +187,9 @@ public class UVRadiationRaspberryController {
         //lectura
         newTrack.setLectura(t.getLectura());
 
+        //uvi
+        newTrack.setUvi(t.getUvi());
+
         if (t.getPosicion() != null) {
             newTrack.setLatitudPosicion(t.getPosicion().getX());
             newTrack.setLongitudPosicion(t.getPosicion().getY());
@@ -171,6 +221,9 @@ public class UVRadiationRaspberryController {
 
         //lectura
         newTrack.setLectura(t.getLectura());
+
+        //uvi
+        newTrack.setUvi(t.getUvi());
 
         if (t.getUbicacion() != null) {
             newTrack.setUbicacion(t.getUbicacion());

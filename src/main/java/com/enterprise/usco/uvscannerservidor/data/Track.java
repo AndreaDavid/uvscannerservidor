@@ -35,6 +35,7 @@ public class Track  implements java.io.Serializable {
      private Boolean ubicacion;
      private Double frecuencia;
      private String lectura;
+     private Float uvi;
      
     public Track() {
     }
@@ -81,6 +82,7 @@ public class Track  implements java.io.Serializable {
         this.estado = estado;
     }
 
+    
     
  
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSZ", timezone = "UTC-5")
@@ -155,6 +157,17 @@ public class Track  implements java.io.Serializable {
     public void setLectura(String lectura) {
        this.lectura = lectura;
     }
+    
+    @Column(name="uvi")
+    public Float getUvi() {
+        return uvi;
+    }
+
+    public void setUvi(Float uvi) {
+        this.uvi = uvi;
+    }
+    
+    
     
    
 }
