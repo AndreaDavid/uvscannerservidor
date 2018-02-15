@@ -85,7 +85,7 @@ public class Track  implements java.io.Serializable {
     
     
  
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSZ", timezone = "UTC-5")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSZ", timezone = JsonFormat.DEFAULT_TIMEZONE)
     @Column(name="fecha_servidor", nullable=false, length=19)
     public Date getFechaServidor() {
         return this.fechaServidor;
