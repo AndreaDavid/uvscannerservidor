@@ -214,7 +214,7 @@ public class UVRadiationRaspberryController {
         newTrack.setEstado(t.getEstado());
 
         //fechaServidor
-        newTrack.setFechaServidor(new Date());
+        newTrack.setFechaServidor(t.getFechaServidor());
 
         //usuario
         newTrack.setNombreUsuario(t.getNombreUsuario());
