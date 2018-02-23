@@ -145,7 +145,7 @@ public class UVRadiationRaspberryController {
         //
         try {
             Track resultado = uvRadiationTrackRepository.findLastTrackDataUvi();
-            return ExtJSReturnUtil.mapOK(resultado);
+            return ExtJSReturnUtil.mapOK(mapearTrackDTO(resultado));
         } catch (Exception e) {
             log.error("findLastTrackDataUvi", e);
             return ExtJSReturnUtil.mapError("Error en findLastTrackDataUvi");
@@ -157,7 +157,7 @@ public class UVRadiationRaspberryController {
         //
         try {
             Track resultado = uvRadiationTrackRepository.findLastTrackDataLectura();
-            return ExtJSReturnUtil.mapOK(resultado);
+            return ExtJSReturnUtil.mapOK(mapearTrackDTO(resultado));
         } catch (Exception e) {
             log.error("findLastTrackDataLectura", e);
             return ExtJSReturnUtil.mapError("Error en findLastTrackDataLectura");
