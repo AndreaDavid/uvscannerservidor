@@ -134,10 +134,34 @@ public class UVRadiationRaspberryController {
             }
             return ExtJSReturnUtil.mapOK(retorno);
         } catch (Exception e) {
-            log.error("insertarTracks", e);
-            return ExtJSReturnUtil.mapError("Error en insertarTracks");
+            log.error("obtenerAllTracks", e);
+            return ExtJSReturnUtil.mapError("Error en obtenerAllTracks");
         }
 
+    }
+    @JsonRequestMappingUtil(value = "/findLastTrackDataUvi", method = RequestMethod.GET)//declara la direccion del metodo y cuales es el tipo de peticion que se debe usar
+    public @ResponseBody
+    Map<String, Object> findLastTrackDataUvi() {//se comunica extjs (vista)
+        //
+        try {
+            Track resultado = uvRadiationTrackRepository.findLastTrackDataUvi();
+            return ExtJSReturnUtil.mapOK(resultado);
+        } catch (Exception e) {
+            log.error("findLastTrackDataUvi", e);
+            return ExtJSReturnUtil.mapError("Error en findLastTrackDataUvi");
+        }
+    }
+    @JsonRequestMappingUtil(value = "/findLastTrackDataLectura", method = RequestMethod.GET)//declara la direccion del metodo y cuales es el tipo de peticion que se debe usar
+    public @ResponseBody
+    Map<String, Object> findLastTrackDataLectura() {//se comunica extjs (vista)
+        //
+        try {
+            Track resultado = uvRadiationTrackRepository.findLastTrackDataLectura();
+            return ExtJSReturnUtil.mapOK(resultado);
+        } catch (Exception e) {
+            log.error("findLastTrackDataLectura", e);
+            return ExtJSReturnUtil.mapError("Error en findLastTrackDataLectura");
+        }
     }
 
     @JsonRequestMappingUtil(value = "/obtenerAllTracksForRange", method = RequestMethod.GET)//declara la direccion del metodo y cuales es el tipo de peticion que se debe usar

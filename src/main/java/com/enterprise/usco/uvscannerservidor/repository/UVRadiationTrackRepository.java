@@ -25,6 +25,5 @@ public interface UVRadiationTrackRepository extends CrudRepository<Track, Intege
 //para hacer con sql puro
    @Query(value = "SELECT * FROM track t WHERE t.id = (SELECT MAX (r.id) FROM track r WHERE r.lectura IS NOT NULL)",nativeQuery = true)//primero hace la consulta del max id, y luego solo trae el track de la consulta
     public Track findLastTrackDataLectura(); 
-
     
 }
