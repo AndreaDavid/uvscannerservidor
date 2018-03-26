@@ -10,6 +10,7 @@ import com.enterprise.usco.uvscannerservidor.data.dto.TrackDTO;
 import com.enterprise.usco.uvscannerservidor.data.util.ExtJSReturnUtil;
 import com.enterprise.usco.uvscannerservidor.data.util.JsonRequestMappingUtil;
 import com.enterprise.usco.uvscannerservidor.repository.UVRadiationTrackRepository;
+import com.enterprise.usco.uvscannerservidor.service.AndroidPushNotificationService;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
@@ -18,10 +19,16 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -48,6 +55,11 @@ public class UVRadiationRaspberryController {
 
     @Autowired//anotacion que permino no inicializar el repository
     private UVRadiationTrackRepository uvRadiationTrackRepository;
+
+    private final String TOPIC = "AndroidPushApp";
+
+    @Autowired
+    AndroidPushNotificationService androidPushNotificationsService;
 
     @JsonRequestMappingUtil(value = "/insertarTracksLectura", method = RequestMethod.POST)//declara la direccion del metodo y cuales es el tipo de peticion que se debe usar
     public @ResponseBody
@@ -78,13 +90,13 @@ public class UVRadiationRaspberryController {
 
     }
 //track uvi
-    
+
     @JsonRequestMappingUtil(value = "/insertarTracksUvi", method = RequestMethod.POST)//declara la direccion del metodo y cuales es el tipo de peticion que se debe usar
     public @ResponseBody
     Map<String, Object> insertarTracksUvi(@RequestBody List<TrackDTO> tracks) {//se comunica extjs (vista)
         //
         try {
-    
+
             List<TrackDTO> insertados = new ArrayList<>();//se declara lista insertados
             boolean setVista = true;
 
@@ -92,21 +104,22 @@ public class UVRadiationRaspberryController {
                 Track insertar = this.mapearTrack(track);//mapear trackdto a track
                 insertar.setFechaCapturaGps(new Date());//se le coloca fecha captura
                 insertar.setFechaMovil(new Date());
-                
+
                 Track anterior = uvRadiationTrackRepository.findLastTrackDataUvi();
-                
-                if(anterior!=null && anterior.getUvi()==insertar.getUvi()){
-                    
+
+                if (anterior != null && anterior.getUvi() == insertar.getUvi()) {
+
                     setVista = false;
-                
+
                 }
-                
+
                 Track insertado = uvRadiationTrackRepository.save(insertar);//guardar en la base de datos el dato.
-                
+
                 insertados.add(mapearTrackDTO(insertado));//el que se insertó lo mapea a DTO y lo inserta 
             }
             if (!insertados.isEmpty() && setVista) {
                 this.template.convertAndSend("/topic/updateuvi", insertados);
+                sendNotifyUVI(insertados.stream().findFirst().orElse(new TrackDTO()).getUvi());
             }
             return ExtJSReturnUtil.mapOK(insertados);
         } catch (NumberFormatException l) {
@@ -119,9 +132,6 @@ public class UVRadiationRaspberryController {
 
     }
 
-    
-    
-    
     @JsonRequestMappingUtil(value = "/obtenerAllTracks", method = RequestMethod.GET)//declara la direccion del metodo y cuales es el tipo de peticion que se debe usar
     public @ResponseBody
     Map<String, Object> obtenerAllTracks() {//se comunica extjs (vista)
@@ -139,6 +149,7 @@ public class UVRadiationRaspberryController {
         }
 
     }
+
     @JsonRequestMappingUtil(value = "/findLastTrackDataUvi", method = RequestMethod.GET)//declara la direccion del metodo y cuales es el tipo de peticion que se debe usar
     public @ResponseBody
     Map<String, Object> findLastTrackDataUvi() {//se comunica extjs (vista)
@@ -151,6 +162,7 @@ public class UVRadiationRaspberryController {
             return ExtJSReturnUtil.mapError("Error en findLastTrackDataUvi");
         }
     }
+
     @JsonRequestMappingUtil(value = "/findLastTrackDataUviInteger", method = RequestMethod.GET)//declara la direccion del metodo y cuales es el tipo de peticion que se debe usar
     public @ResponseBody
     Integer findLastTrackDataUviInteger() {//se comunica extjs (vista)
@@ -162,7 +174,8 @@ public class UVRadiationRaspberryController {
             log.error("findLastTrackDataUvi", e);
             return null;
         }
-    }    
+    }
+
     @JsonRequestMappingUtil(value = "/findLastTrackDataLectura", method = RequestMethod.GET)//declara la direccion del metodo y cuales es el tipo de peticion que se debe usar
     public @ResponseBody
     Map<String, Object> findLastTrackDataLectura() {//se comunica extjs (vista)
@@ -276,6 +289,37 @@ public class UVRadiationRaspberryController {
         }
 
         return newTrack;
+    }
+
+    private boolean sendNotifyUVI(Float uvi) {
+        JSONObject body = new JSONObject();
+        body.put("to", "/topics/" + TOPIC);
+        body.put("priority", "high");
+        JSONObject notification = new JSONObject();
+        //notification.put("title", uvi);
+        notification.put("body", uvi);
+        //body.put("notification", notification);
+        body.put("data", notification);
+        /**
+         * {
+         * "data": { "title": "JSA Notification", "body": "Happy
+         * Message!" }, "to": "/topics/JavaSampleApproach", "priority": "high" }
+         */
+        HttpEntity<String> request = new HttpEntity<>(body.toString());
+
+        CompletableFuture<String> pushNotification = androidPushNotificationsService.send(request);
+        CompletableFuture.allOf(pushNotification).join();
+
+        try {
+            String firebaseResponse = pushNotification.get();
+            return true;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
+        return false;
     }
 
 }
