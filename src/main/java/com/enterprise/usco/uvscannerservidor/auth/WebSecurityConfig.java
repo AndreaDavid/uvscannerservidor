@@ -40,6 +40,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/").permitAll()
                 .antMatchers("/raspberrycontroller/insertarTracksUvi").permitAll()
                 .antMatchers("/raspberrycontroller/insertarTracksLectura").permitAll()
+                .antMatchers("/raspberrycontroller/findLastTrackDataUviInteger").permitAll()
+                
                 //.anyRequest().anonymous()
                 .and()
                 .formLogin()

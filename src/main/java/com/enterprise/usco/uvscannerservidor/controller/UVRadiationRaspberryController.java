@@ -151,6 +151,18 @@ public class UVRadiationRaspberryController {
             return ExtJSReturnUtil.mapError("Error en findLastTrackDataUvi");
         }
     }
+    @JsonRequestMappingUtil(value = "/findLastTrackDataUviInteger", method = RequestMethod.GET)//declara la direccion del metodo y cuales es el tipo de peticion que se debe usar
+    public @ResponseBody
+    Integer findLastTrackDataUviInteger() {//se comunica extjs (vista)
+        //
+        try {
+            Track resultado = uvRadiationTrackRepository.findLastTrackDataUvi();
+            return resultado.getUvi().intValue();
+        } catch (Exception e) {
+            log.error("findLastTrackDataUvi", e);
+            return null;
+        }
+    }    
     @JsonRequestMappingUtil(value = "/findLastTrackDataLectura", method = RequestMethod.GET)//declara la direccion del metodo y cuales es el tipo de peticion que se debe usar
     public @ResponseBody
     Map<String, Object> findLastTrackDataLectura() {//se comunica extjs (vista)

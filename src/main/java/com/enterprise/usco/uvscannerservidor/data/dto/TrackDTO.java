@@ -8,10 +8,7 @@ package com.enterprise.usco.uvscannerservidor.data.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.util.Date;
 
-/**
- *
- * @author Luis Solarte
- */
+
 public class TrackDTO {
 
    private Integer id;
