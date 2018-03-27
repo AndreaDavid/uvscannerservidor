@@ -24,6 +24,17 @@ public class TrackDTO {
     private Double longitudPosicion;
     private String lectura;
     private Float uvi;
+    private Float altitud;
+
+    public Float getAltitud() {
+        return altitud;
+    }
+
+    public void setAltitud(Float altitud) {
+        this.altitud = altitud;
+    }
+    
+    
     
     
     

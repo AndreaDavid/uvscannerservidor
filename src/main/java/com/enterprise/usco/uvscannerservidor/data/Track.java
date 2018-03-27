@@ -36,6 +36,7 @@ public class Track  implements java.io.Serializable {
      private Double frecuencia;
      private String lectura;
      private Float uvi;
+     private Float altitud;
      
     public Track() {
     }
@@ -167,9 +168,15 @@ public class Track  implements java.io.Serializable {
         this.uvi = uvi;
     }
     
+    @Column(name="altitud")
+    public Float getAltitud() {
+        return altitud;
+    }
+
+    public void setAltitud(Float altitud) {
+        this.altitud = altitud;
+    }
     
-    
-   
 }
 
 
