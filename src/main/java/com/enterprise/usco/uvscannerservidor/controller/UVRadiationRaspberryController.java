@@ -273,6 +273,8 @@ public class UVRadiationRaspberryController {
 
         //uvi
         newTrack.setUvi(t.getUvi());
+        
+        newTrack.setAltitud(t.getAltitud());
 
         if (t.getUbicacion() != null) {
             newTrack.setUbicacion(t.getUbicacion());
