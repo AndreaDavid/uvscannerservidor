@@ -53,7 +53,7 @@ public class AccessController {
             securityService.login(correos.stream().findFirst().orElse(null), Boolean.TRUE);
             return ExtJSReturnUtil.mapOK(correos);
         } else {
-            return ExtJSReturnUtil.mapOk("usuarioNoRegistrado");
+            return ExtJSReturnUtil.mapError("usuarioNoRegistrado");
         }
     }
     @JsonRequestMappingUtil(value = "/logout", method = RequestMethod.GET)//declara la direccion del metodo y cuales es el tipo de peticion que se debe usar
