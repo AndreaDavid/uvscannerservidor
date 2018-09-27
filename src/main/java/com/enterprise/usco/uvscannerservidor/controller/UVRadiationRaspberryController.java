@@ -119,7 +119,11 @@ public class UVRadiationRaspberryController {
             }
             if (!insertados.isEmpty() && setVista) {
                 this.template.convertAndSend("/topic/updateuvi", insertados);
-                sendNotifyUVI(insertados.stream().findFirst().orElse(new TrackDTO()).getUvi());
+                try {
+                    sendNotifyUVI(insertados.stream().findFirst().orElse(new TrackDTO()).getUvi());
+                } catch (Exception e) {
+                    log.error("error informando a los celulares");
+                }
             }
             return ExtJSReturnUtil.mapOK(insertados);
         } catch (NumberFormatException l) {
@@ -217,6 +221,7 @@ public class UVRadiationRaspberryController {
 
         newTrack.setId(t.getId());
         newTrack.setIdUsuario(t.getIdUsuario());
+        newTrack.setUviVelm(t.getUviVelm());
 
         //fechamovil
         newTrack.setFechaMovil(t.getFechaMovil());
@@ -251,6 +256,7 @@ public class UVRadiationRaspberryController {
         Track newTrack = new Track();
 
         newTrack.setId(t.getId());
+        newTrack.setUviVelm(t.getUviVelm());
         newTrack.setIdUsuario(t.getIdUsuario());
 
         //fechaMovil
@@ -273,7 +279,7 @@ public class UVRadiationRaspberryController {
 
         //uvi
         newTrack.setUvi(t.getUvi());
-        
+
         newTrack.setAltitud(t.getAltitud());
 
         if (t.getUbicacion() != null) {
@@ -304,8 +310,8 @@ public class UVRadiationRaspberryController {
         body.put("data", notification);
         /**
          * {
-         * "data": { "title": "JSA Notification", "body": "Happy
-         * Message!" }, "to": "/topics/JavaSampleApproach", "priority": "high" }
+         * "data": { "title": "JSA Notification", "body": "Happy Message!" },
+         * "to": "/topics/JavaSampleApproach", "priority": "high" }
          */
         HttpEntity<String> request = new HttpEntity<>(body.toString());
 
