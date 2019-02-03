@@ -15,7 +15,7 @@ def outData(lectura,uvi,latitude,longitude,altitude):
           json=[{
                     "id":None,
                     "idUsuario":1,
-                    "nombreUsuario":"Paola y su cerveza",
+                    "nombreUsuario":"Paola",
                     "estado":"activo",
                     "fechaServidor":None,
                     "fechaMovil":None,
