@@ -14,6 +14,8 @@ import com.enterprise.usco.uvscannerservidor.service.AndroidPushNotificationServ
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -198,6 +200,16 @@ public class UVRadiationRaspberryController {
     Map<String, Object> obtenerAllTracksForRange(@RequestParam(value = "range", required = true) Integer rango) {//se comunica extjs (vista)
         //
         try {
+            /*DateFormat df = new SimpleDateFormat("yyyy_MM_dd_HH_mm");
+            Date fechaSuperior = df.parse("2018_09_29_24_00");
+            //Date fechaSuperior = new Date();
+            //Calendar calendar = Calendar.getInstance();
+            //calendar.setTime(fechaSuperior);
+            //calendar.add(Calendar.DAY_OF_MONTH, -rango);
+            //Date fechaInferior = calendar.getTime();
+            
+            Date fechaInferior = df.parse("2018_09_29_00_00");*/
+            
             Date fechaSuperior = new Date();
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(fechaSuperior);

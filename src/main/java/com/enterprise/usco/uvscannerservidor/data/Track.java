@@ -88,15 +88,9 @@ public class Track  implements java.io.Serializable {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSZ", timezone = JsonFormat.DEFAULT_TIMEZONE)
     @Column(name="fecha_servidor", nullable=false, length=19)
     public Date getFechaServidor() {
-        return this.fechaServidor!=null?mapearTimeZone(fechaServidor):null;        
+        return this.fechaServidor;
     }
-    public Date mapearTimeZone(Date fecha) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(fecha);
-        Long tiempo = fecha.getTime() + Calendar.getInstance().get(Calendar.ZONE_OFFSET);
-        Date fechaSalida = new Date(tiempo);
-        return fechaSalida;
-    }
+    
     
     public void setFechaServidor(Date fechaServidor) {
         this.fechaServidor = fechaServidor;
