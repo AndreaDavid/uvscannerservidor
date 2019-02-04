@@ -16,7 +16,7 @@ spring:
             fail-on-empty-beans: false
   jpa:
     database: MYSQL
-    show-sql: false
+    show-sql: true
     properties:
       hibernate:
         dialect: org.hibernate.spatial.dialect.mysql.MySQLSpatialDialect

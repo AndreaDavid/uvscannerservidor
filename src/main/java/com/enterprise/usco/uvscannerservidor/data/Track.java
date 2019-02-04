@@ -4,15 +4,13 @@ package com.enterprise.usco.uvscannerservidor.data;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.vividsolutions.jts.geom.Point;
+import java.util.Calendar;
 import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import static javax.persistence.GenerationType.IDENTITY;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import org.hibernate.annotations.Type;
 
@@ -35,6 +33,9 @@ public class Track  implements java.io.Serializable {
      private Boolean ubicacion;
      private Double frecuencia;
      private String lectura;
+     private Float uvi;
+     private Float altitud;
+     private Float uviVelm;
      
     public Track() {
     }
@@ -82,12 +83,14 @@ public class Track  implements java.io.Serializable {
     }
 
     
+    
  
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSZ", timezone = JsonFormat.DEFAULT_TIMEZONE)
     @Column(name="fecha_servidor", nullable=false, length=19)
     public Date getFechaServidor() {
         return this.fechaServidor;
     }
+    
     
     public void setFechaServidor(Date fechaServidor) {
         this.fechaServidor = fechaServidor;
@@ -156,7 +159,32 @@ public class Track  implements java.io.Serializable {
        this.lectura = lectura;
     }
     
-   
+    @Column(name="uvi")
+    public Float getUvi() {
+        return uvi;
+    }
+
+    public void setUvi(Float uvi) {
+        this.uvi = uvi;
+    }
+     @Column(name="uvi_velm")
+    public Float getUviVelm() {
+        return uviVelm;
+    }
+
+    public void setUviVelm(Float uviVelm) {
+        this.uviVelm = uviVelm;
+    }
+    
+    @Column(name="altitud")
+    public Float getAltitud() {
+        return altitud;
+    }
+
+    public void setAltitud(Float altitud) {
+        this.altitud = altitud;
+    }
+    
 }
 
 

@@ -10,18 +10,28 @@ import com.enterprise.usco.uvscannerservidor.data.dto.TrackDTO;
 import com.enterprise.usco.uvscannerservidor.data.util.ExtJSReturnUtil;
 import com.enterprise.usco.uvscannerservidor.data.util.JsonRequestMappingUtil;
 import com.enterprise.usco.uvscannerservidor.repository.UVRadiationTrackRepository;
+import com.enterprise.usco.uvscannerservidor.service.AndroidPushNotificationService;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Controller;
@@ -41,16 +51,21 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class UVRadiationRaspberryController {
 
     private static final Log log = LogFactory.getLog(UVRadiationRaspberryController.class);
-    /*
+
     @Autowired
-    private SimpMessagingTemplate template;*/
+    private SimpMessagingTemplate template;
 
     @Autowired//anotacion que permino no inicializar el repository
     private UVRadiationTrackRepository uvRadiationTrackRepository;
 
-    @JsonRequestMappingUtil(value = "/insertarTracks", method = RequestMethod.POST)//declara la direccion del metodo y cuales es el tipo de peticion que se debe usar
+    private final String TOPIC = "AndroidPushApp";
+
+    @Autowired
+    AndroidPushNotificationService androidPushNotificationsService;
+
+    @JsonRequestMappingUtil(value = "/insertarTracksLectura", method = RequestMethod.POST)//declara la direccion del metodo y cuales es el tipo de peticion que se debe usar
     public @ResponseBody
-    Map<String, Object> insertarTracks(@RequestBody List<TrackDTO> tracks) {//se comunica extjs (vista)
+    Map<String, Object> insertarTracksLectura(@RequestBody List<TrackDTO> tracks) {//se comunica extjs (vista)
         //
         try {
             List<TrackDTO> insertados = new ArrayList<>();//se declara lista insertados
@@ -63,7 +78,55 @@ public class UVRadiationRaspberryController {
 
                 insertados.add(mapearTrackDTO(insertado));//el que se insertó lo mapea a DTO y lo inserta 
             }
-            // this.template.convertAndSend("/topic/actrecord", retornos);
+            if (!insertados.isEmpty()) {
+                this.template.convertAndSend("/topic/updateuvi", insertados);
+            }
+            return ExtJSReturnUtil.mapOK(insertados);
+        } catch (NumberFormatException l) {
+            log.error("Error de parseo", l);
+            return ExtJSReturnUtil.mapError("Error en insertarTracks");
+        } catch (Exception e) {
+            log.error("insertarTracks", e);
+            return ExtJSReturnUtil.mapError("Error en insertarTracks");
+        }
+
+    }
+//track uvi
+
+    @JsonRequestMappingUtil(value = "/insertarTracksUvi", method = RequestMethod.POST)//declara la direccion del metodo y cuales es el tipo de peticion que se debe usar
+    public @ResponseBody
+    Map<String, Object> insertarTracksUvi(@RequestBody List<TrackDTO> tracks) {//se comunica extjs (vista)
+        //
+        try {
+
+            List<TrackDTO> insertados = new ArrayList<>();//se declara lista insertados
+            boolean setVista = true;
+
+            for (TrackDTO track : tracks) {//for extendido recorre lista tracks 
+                Track insertar = this.mapearTrack(track);//mapear trackdto a track
+                insertar.setFechaCapturaGps(new Date());//se le coloca fecha captura
+                insertar.setFechaMovil(new Date());
+
+                Track anterior = uvRadiationTrackRepository.findLastTrackDataUvi();
+
+                if (anterior != null && anterior.getUvi() == insertar.getUvi()) {
+
+                    setVista = false;
+
+                }
+
+                Track insertado = uvRadiationTrackRepository.save(insertar);//guardar en la base de datos el dato.
+
+                insertados.add(mapearTrackDTO(insertado));//el que se insertó lo mapea a DTO y lo inserta 
+            }
+            if (!insertados.isEmpty() && setVista) {
+                this.template.convertAndSend("/topic/updateuvi", insertados);
+                try {
+                    sendNotifyUVI(insertados.stream().findFirst().orElse(new TrackDTO()).getUvi());
+                } catch (Exception e) {
+                    log.error("error informando a los celulares");
+                }
+            }
             return ExtJSReturnUtil.mapOK(insertados);
         } catch (NumberFormatException l) {
             log.error("Error de parseo", l);
@@ -87,10 +150,49 @@ public class UVRadiationRaspberryController {
             }
             return ExtJSReturnUtil.mapOK(retorno);
         } catch (Exception e) {
-            log.error("insertarTracks", e);
-            return ExtJSReturnUtil.mapError("Error en insertarTracks");
+            log.error("obtenerAllTracks", e);
+            return ExtJSReturnUtil.mapError("Error en obtenerAllTracks");
         }
 
+    }
+
+    @JsonRequestMappingUtil(value = "/findLastTrackDataUvi", method = RequestMethod.GET)//declara la direccion del metodo y cuales es el tipo de peticion que se debe usar
+    public @ResponseBody
+    Map<String, Object> findLastTrackDataUvi() {//se comunica extjs (vista)
+        //
+        try {
+            Track resultado = uvRadiationTrackRepository.findLastTrackDataUvi();
+            return ExtJSReturnUtil.mapOK(mapearTrackDTO(resultado));
+        } catch (Exception e) {
+            log.error("findLastTrackDataUvi", e);
+            return ExtJSReturnUtil.mapError("Error en findLastTrackDataUvi");
+        }
+    }
+
+    @JsonRequestMappingUtil(value = "/findLastTrackDataUviInteger", method = RequestMethod.GET)//declara la direccion del metodo y cuales es el tipo de peticion que se debe usar
+    public @ResponseBody
+    Integer findLastTrackDataUviInteger() {//se comunica extjs (vista)
+        //
+        try {
+            Track resultado = uvRadiationTrackRepository.findLastTrackDataUvi();
+            return resultado.getUvi().intValue();
+        } catch (Exception e) {
+            log.error("findLastTrackDataUvi", e);
+            return null;
+        }
+    }
+
+    @JsonRequestMappingUtil(value = "/findLastTrackDataLectura", method = RequestMethod.GET)//declara la direccion del metodo y cuales es el tipo de peticion que se debe usar
+    public @ResponseBody
+    Map<String, Object> findLastTrackDataLectura() {//se comunica extjs (vista)
+        //
+        try {
+            Track resultado = uvRadiationTrackRepository.findLastTrackDataLectura();
+            return ExtJSReturnUtil.mapOK(mapearTrackDTO(resultado));
+        } catch (Exception e) {
+            log.error("findLastTrackDataLectura", e);
+            return ExtJSReturnUtil.mapError("Error en findLastTrackDataLectura");
+        }
     }
 
     @JsonRequestMappingUtil(value = "/obtenerAllTracksForRange", method = RequestMethod.GET)//declara la direccion del metodo y cuales es el tipo de peticion que se debe usar
@@ -98,12 +200,22 @@ public class UVRadiationRaspberryController {
     Map<String, Object> obtenerAllTracksForRange(@RequestParam(value = "range", required = true) Integer rango) {//se comunica extjs (vista)
         //
         try {
+            /*DateFormat df = new SimpleDateFormat("yyyy_MM_dd_HH_mm");
+            Date fechaSuperior = df.parse("2018_09_29_24_00");
+            //Date fechaSuperior = new Date();
+            //Calendar calendar = Calendar.getInstance();
+            //calendar.setTime(fechaSuperior);
+            //calendar.add(Calendar.DAY_OF_MONTH, -rango);
+            //Date fechaInferior = calendar.getTime();
+            
+            Date fechaInferior = df.parse("2018_09_29_00_00");*/
+            
             Date fechaSuperior = new Date();
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(fechaSuperior);
             calendar.add(Calendar.DAY_OF_MONTH, -rango);
             Date fechaInferior = calendar.getTime();
-            List<Track> res2 = uvRadiationTrackRepository.findTracksReadDateRange(fechaInferior, fechaSuperior);
+            List<Track> res2 = uvRadiationTrackRepository.findTracksReadDateRangeLectura(fechaInferior, fechaSuperior);
             List<TrackDTO> retorno = new ArrayList<>();
             for (Track track : res2) {
                 retorno.add(mapearTrackDTO(track));
@@ -121,6 +233,7 @@ public class UVRadiationRaspberryController {
 
         newTrack.setId(t.getId());
         newTrack.setIdUsuario(t.getIdUsuario());
+        newTrack.setUviVelm(t.getUviVelm());
 
         //fechamovil
         newTrack.setFechaMovil(t.getFechaMovil());
@@ -140,6 +253,9 @@ public class UVRadiationRaspberryController {
         //lectura
         newTrack.setLectura(t.getLectura());
 
+        //uvi
+        newTrack.setUvi(t.getUvi());
+
         if (t.getPosicion() != null) {
             newTrack.setLatitudPosicion(t.getPosicion().getX());
             newTrack.setLongitudPosicion(t.getPosicion().getY());
@@ -152,6 +268,7 @@ public class UVRadiationRaspberryController {
         Track newTrack = new Track();
 
         newTrack.setId(t.getId());
+        newTrack.setUviVelm(t.getUviVelm());
         newTrack.setIdUsuario(t.getIdUsuario());
 
         //fechaMovil
@@ -164,13 +281,18 @@ public class UVRadiationRaspberryController {
         newTrack.setEstado(t.getEstado());
 
         //fechaServidor
-        newTrack.setFechaServidor(new Date());
+        newTrack.setFechaServidor(t.getFechaServidor());
 
         //usuario
         newTrack.setNombreUsuario(t.getNombreUsuario());
 
         //lectura
         newTrack.setLectura(t.getLectura());
+
+        //uvi
+        newTrack.setUvi(t.getUvi());
+
+        newTrack.setAltitud(t.getAltitud());
 
         if (t.getUbicacion() != null) {
             newTrack.setUbicacion(t.getUbicacion());
@@ -187,6 +309,37 @@ public class UVRadiationRaspberryController {
         }
 
         return newTrack;
+    }
+
+    private boolean sendNotifyUVI(Float uvi) {
+        JSONObject body = new JSONObject();
+        body.put("to", "/topics/" + TOPIC);
+        body.put("priority", "high");
+        JSONObject notification = new JSONObject();
+        //notification.put("title", uvi);
+        notification.put("body", uvi);
+        //body.put("notification", notification);
+        body.put("data", notification);
+        /**
+         * {
+         * "data": { "title": "JSA Notification", "body": "Happy Message!" },
+         * "to": "/topics/JavaSampleApproach", "priority": "high" }
+         */
+        HttpEntity<String> request = new HttpEntity<>(body.toString());
+
+        CompletableFuture<String> pushNotification = androidPushNotificationsService.send(request);
+        CompletableFuture.allOf(pushNotification).join();
+
+        try {
+            String firebaseResponse = pushNotification.get();
+            return true;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
+        return false;
     }
 
 }

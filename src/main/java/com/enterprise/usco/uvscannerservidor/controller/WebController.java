@@ -67,12 +67,15 @@ public class WebController {
     Map<String, Object> obtenerAllTracksForRange(@RequestParam(value = "range", required = true) Integer rango) {//se comunica extjs (vista)
         //
         try {
+            if(rango==null){
+                rango=50;
+            }
             Date fechaSuperior = new Date();
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(fechaSuperior);
             calendar.add(Calendar.DAY_OF_MONTH, -rango);
             Date fechaInferior = calendar.getTime();
-            List<Track> res2 = uvRadiationTrackRepository.findTracksReadDateRange(fechaInferior, fechaSuperior);
+            List<Track> res2 = uvRadiationTrackRepository.findTracksReadDateRangeLectura(fechaInferior, fechaSuperior);
             List<TrackDTO> retorno = new ArrayList<>();
             for (Track track : res2) {
                 retorno.add(mapearTrackDTO(track));

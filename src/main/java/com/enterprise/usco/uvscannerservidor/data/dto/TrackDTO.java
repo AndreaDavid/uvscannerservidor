@@ -6,12 +6,10 @@
 package com.enterprise.usco.uvscannerservidor.data.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import java.util.Calendar;
 import java.util.Date;
 
-/**
- *
- * @author Luis Solarte
- */
+
 public class TrackDTO {
 
    private Integer id;
@@ -26,12 +24,27 @@ public class TrackDTO {
     private Double latitudPosicion;
     private Double longitudPosicion;
     private String lectura;
-    
-    
-    
-    
-    
+    private Float uvi;
+    private Float uviVelm;
+    private Float altitud;
 
+    public Float getAltitud() {
+        return altitud;
+    }
+
+    public void setAltitud(Float altitud) {
+        this.altitud = altitud;
+    }
+
+    public Float getUviVelm() {
+        return uviVelm;
+    }
+
+    public void setUviVelm(Float uviVelm) {
+        this.uviVelm = uviVelm;
+    }
+    
+    
     public TrackDTO() {
     }
 
@@ -88,9 +101,9 @@ public class TrackDTO {
         this.estado = estado;
     }
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy/MM/dd/HH/mm/ss",timezone = "GMT-5",locale = "GMT-5")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy/MM/dd/HH/mm/ss/SSSZ",timezone = JsonFormat.DEFAULT_TIMEZONE)//,timezone = "GMT-5",locale = "GMT-5")
     public Date getFechaServidor() {
-        return fechaServidor;
+        return fechaServidor!=null?mapearTimeZone(fechaServidor):null;
     }
 
     /**
@@ -106,6 +119,14 @@ public class TrackDTO {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSZ")
     public Date getFechaMovil() {
         return fechaMovil;
+    }
+    
+    public Date mapearTimeZone(Date fecha) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(fecha);
+        Long tiempo = fecha.getTime() + Calendar.getInstance().get(Calendar.ZONE_OFFSET);
+        Date fechaSalida = new Date(tiempo);
+        return fechaSalida;
     }
 
     /**
@@ -194,4 +215,15 @@ public class TrackDTO {
     public String getLectura() {
         return this.lectura;
     }
+
+    public Float getUvi() {
+        return uvi;
+    }
+
+    public void setUvi(Float uvi) {
+        this.uvi = uvi;
+    }
+    
+    
+    
 }

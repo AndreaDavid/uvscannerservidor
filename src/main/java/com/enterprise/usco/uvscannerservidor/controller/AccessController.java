@@ -12,6 +12,7 @@ import com.enterprise.usco.uvscannerservidor.data.util.ExtJSReturnUtil;
 import com.enterprise.usco.uvscannerservidor.data.util.JsonRequestMappingUtil;
 import com.enterprise.usco.uvscannerservidor.repository.UsuarioRepository;
 import com.enterprise.usco.uvscannerservidor.util.AuthUtil;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
@@ -69,8 +70,8 @@ public class AccessController {
             @RequestParam(value = "password", required = true) String password,
             @RequestParam(value = "correo", required = true) String correo,
             @RequestParam(value = "nombre", required = true) String nombre) {//se comunica extjs (vista)
-        
-        List<Usuario> usuarios = usuarioRepository.findUserByUserName(correo);//trae todos los usuarios que tengan el mismo nombre ingersado
+
+        List<Usuario> usuarios = usuarioRepository.findUserByCorreo(correo);//trae todos los usuarios que tengan el mismo nombre ingersado
         if (usuarios.size() > 0) {
 
             return ExtJSReturnUtil.mapError("usuarioExistente");//
@@ -83,7 +84,6 @@ public class AccessController {
         log.info(correo + password);
         usuarioRepository.save(usuario);
         return ExtJSReturnUtil.mapOk(correo);
-        
     }
 
     private static class Correo {
@@ -103,11 +103,11 @@ public class AccessController {
                 return ExtJSReturnUtil.mapOK(user);
 
             } else {
-                return ExtJSReturnUtil.mapError("No se ha iniciado sesión");
+                return ExtJSReturnUtil.mapError("noSesion");
             }
 
         } else {
-            return ExtJSReturnUtil.mapError("Sesion no encontrada");
+            return ExtJSReturnUtil.mapError("noSesion");
         }
     }
 }
