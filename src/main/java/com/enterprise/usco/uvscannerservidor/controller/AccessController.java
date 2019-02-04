@@ -84,7 +84,6 @@ public class AccessController {
         log.info(correo + password);
         usuarioRepository.save(usuario);
         return ExtJSReturnUtil.mapOk(correo);
-
     }
 
     private static class Correo {
