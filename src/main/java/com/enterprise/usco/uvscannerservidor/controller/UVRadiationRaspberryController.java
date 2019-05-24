@@ -5,10 +5,12 @@
  */
 package com.enterprise.usco.uvscannerservidor.controller;
 
+import com.enterprise.usco.uvscannerservidor.data.DataUV;
 import com.enterprise.usco.uvscannerservidor.data.Track;
 import com.enterprise.usco.uvscannerservidor.data.dto.TrackDTO;
 import com.enterprise.usco.uvscannerservidor.data.util.ExtJSReturnUtil;
 import com.enterprise.usco.uvscannerservidor.data.util.JsonRequestMappingUtil;
+import com.enterprise.usco.uvscannerservidor.repository.NativeQueryRepository;
 import com.enterprise.usco.uvscannerservidor.repository.UVRadiationTrackRepository;
 import com.enterprise.usco.uvscannerservidor.service.AndroidPushNotificationService;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -27,8 +29,6 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -55,6 +55,9 @@ public class UVRadiationRaspberryController {
 
     @Autowired//anotacion que permino no inicializar el repository
     private UVRadiationTrackRepository uvRadiationTrackRepository;
+    
+    @Autowired//anotacion que permino no inicializar el repository
+    private NativeQueryRepository nativeQuery;
 
     private final String TOPIC = "AndroidPushApp";
 
@@ -153,6 +156,25 @@ public class UVRadiationRaspberryController {
         }
 
     }
+    
+    @JsonRequestMappingUtil(value = "/obtenerTracksDTO", method = RequestMethod.GET)//declara la direccion del metodo y cuales es el tipo de peticion que se debe usar
+    public @ResponseBody
+    Map<String, Object> obtenerTracksDTO(@RequestParam(value = "range", required = true) Integer rango) {//se comunica extjs (vista)
+        //
+        try {
+            Date fechaSuperior = new Date();
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(fechaSuperior);
+            calendar.add(Calendar.DAY_OF_MONTH, -rango);
+            Date fechaInferior = calendar.getTime();
+            List<DataUV> datos = nativeQuery.findLastTrack(fechaInferior, fechaSuperior);
+            return ExtJSReturnUtil.mapOK(datos);
+        } catch (Exception e) {
+            log.error("obtenerAllTracks", e);
+            return ExtJSReturnUtil.mapError("Error en obtenerAllTracks");
+        }
+
+    }
 
     @JsonRequestMappingUtil(value = "/findLastTrackDataUvi", method = RequestMethod.GET)//declara la direccion del metodo y cuales es el tipo de peticion que se debe usar
     public @ResponseBody
@@ -196,24 +218,19 @@ public class UVRadiationRaspberryController {
     @JsonRequestMappingUtil(value = "/obtenerAllTracksForRange", method = RequestMethod.GET)//declara la direccion del metodo y cuales es el tipo de peticion que se debe usar
     public @ResponseBody
     Map<String, Object> obtenerAllTracksForRange(@RequestParam(value = "range", required = true) Integer rango) {//se comunica extjs (vista)
-        //
+       //
         try {
             Date fechaSuperior = new Date();
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(fechaSuperior);
             calendar.add(Calendar.DAY_OF_MONTH, -rango);
             Date fechaInferior = calendar.getTime();
-            List<Track> res2 = uvRadiationTrackRepository.findTracksReadDateRangeLectura(fechaInferior, fechaSuperior);
-            List<TrackDTO> retorno = new ArrayList<>();
-            for (Track track : res2) {
-                retorno.add(mapearTrackDTO(track));
-            }
-            return ExtJSReturnUtil.mapOK(retorno);
+            List<DataUV> datos = nativeQuery.findLastTrack(fechaInferior, fechaSuperior);
+            return ExtJSReturnUtil.mapOK(datos);
         } catch (Exception e) {
-            log.error("insertarTracks", e);
-            return ExtJSReturnUtil.mapError("Error en insertarTracks");
+            log.error("obtenerAllTracks", e);
+            return ExtJSReturnUtil.mapError("Error en obtenerAllTracks");
         }
-
     }
 
     private TrackDTO mapearTrackDTO(Track t) {

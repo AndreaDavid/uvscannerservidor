@@ -6,6 +6,7 @@
 package com.enterprise.usco.uvscannerservidor.data.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 
@@ -102,7 +103,7 @@ public class TrackDTO {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy/MM/dd/HH/mm/ss/SSSZ",timezone = JsonFormat.DEFAULT_TIMEZONE)//,timezone = "GMT-5",locale = "GMT-5")
     public Date getFechaServidor() {
-        return fechaServidor;
+        return fechaServidor!=null?mapearTimeZone(fechaServidor):null;
     }
 
     /**
@@ -118,6 +119,14 @@ public class TrackDTO {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSZ")
     public Date getFechaMovil() {
         return fechaMovil;
+    }
+    
+    public Date mapearTimeZone(Date fecha) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(fecha);
+        Long tiempo = fecha.getTime() + Calendar.getInstance().get(Calendar.ZONE_OFFSET);
+        Date fechaSalida = new Date(tiempo);
+        return fechaSalida;
     }
 
     /**
