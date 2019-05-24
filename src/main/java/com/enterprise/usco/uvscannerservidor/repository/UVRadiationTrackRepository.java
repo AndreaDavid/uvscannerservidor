@@ -1,5 +1,6 @@
 package com.enterprise.usco.uvscannerservidor.repository;
 
+import com.enterprise.usco.uvscannerservidor.data.DataUV;
 import com.enterprise.usco.uvscannerservidor.data.Track;
 import java.util.Date;
 import java.util.List;
@@ -25,5 +26,9 @@ public interface UVRadiationTrackRepository extends CrudRepository<Track, Intege
 //para hacer con sql puro
    @Query(value = "SELECT * FROM track t WHERE t.id = (SELECT MAX (r.id) FROM track r WHERE r.lectura IS NOT NULL)",nativeQuery = true)//primero hace la consulta del max id, y luego solo trae el track de la consulta
     public Track findLastTrackDataLectura(); 
+    
+   @Query(value = "SELECT id, fecha_servidor,altitud,x(posicion) as latitud,y(posicion) as longitud,lectura,uvi FROM track WHERE fecha_servidor >= :fechaInferior AND fecha_servidor<=:fechaSuperior AND lectura IS NOT NULL GROUP BY fecha_servidor ORDER BY fecha_servidor ASC",nativeQuery = true)//primero hace la consulta del max id, y luego solo trae el track de la consulta
+    public List<DataUV> findLastTrack(@Param("fechaInferior") Date fechaInferior,@Param("fechaSuperior") Date fechaSuperior); 
+     
     
 }
